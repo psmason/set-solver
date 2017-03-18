@@ -3,6 +3,7 @@
 // each image
 
 #include <cards.h>
+#include <attributes.h>
 
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
@@ -53,45 +54,6 @@ static void drawSquares( Mat& image, const vector<vector<Point> >& squares )
     }
 
   imshow(wndname, image);
-}
-
-enum class Color {
-  RED,
-  GREEN,
-  PURPLE,
-};
-
-Color getColorFromHue(const double hue) {
-  if (hue < 45.0) {
-    return Color::RED;
-  } else if (hue > 90) {
-    return Color::PURPLE;
-  } else {
-    return Color::GREEN;
-  }  
-}
-
-std::string ColorToString(const Color color) {
-  switch (color) {
-  case Color::RED:
-    return "RED";
-  case Color::PURPLE:
-    return "PURPLE";
-  case Color::GREEN:
-    return "GREEN";
-  }
-}
-
-Color computeColor(const Mat& card, const Mat& mask) {
-  Mat blurred;
-  GaussianBlur(card, blurred, Size(13, 13), 0, 0);
-
-  Mat hsv;
-  cvtColor(blurred, hsv, CV_BGR2HSV);
-
-  std::cout << "object mean: " << mean(hsv, mask) << " for type " << card.type() << std::endl;
-  const auto color = getColorFromHue(mean(hsv, mask)[0]);
-  return color;
 }
 
 enum class Shading {
@@ -196,64 +158,8 @@ Symbol computeSymbol(const Mat& card,
 }
 
 
-vector<vector<Point>> computeCardContours(const Mat& card) {
-  Mat gray;
-  cvtColor(card, gray, CV_BGR2GRAY);
 
-  Mat blurred;
-  GaussianBlur(gray, blurred, Size(9, 9), 0, 0);
-
-  // imshow(wndname, blurred);
-  // waitKey();
-  
-  Mat _img;
-  double otsu_thresh_val = cv::threshold(blurred,
-                                         _img,
-                                         0,
-                                         255,
-                                         CV_THRESH_BINARY | CV_THRESH_OTSU);
-  
-  Mat canny;
-  Canny(blurred, canny, otsu_thresh_val*0.25, otsu_thresh_val*0.5);
-
-  // dilate canny output to remove potential
-  // holes between edge segments
-  dilate(canny, canny, Mat(), Point(-1,-1));
-
-  // imshow(wndname, canny);
-  // waitKey();
-
-  vector<vector<Point>> contours;
-  findContours(canny,
-               contours,
-               CV_RETR_EXTERNAL,
-               CV_CHAIN_APPROX_SIMPLE);
-
-  /// Draw contours
-  Mat drawing = card.clone(); 
-  for( int i = 0; i< contours.size(); i++ ) {
-    Scalar color(124, 252, 0);
-    drawContours(drawing, contours, i, color, 2, 8);
-  }
-
-  // imshow(wndname, drawing);
-  // waitKey();
-
-  return contours;
-}
-
-Mat computeFeatureMask(const Mat& card,
-                       const vector<vector<Point>>& contours) {
-  Mat mask(card.size(), CV_8U);
-  mask = 0;
-  drawContours(mask, contours, 0, 255,-1);
-
-  // imshow("feature mask", mask);
-  // waitKey();
-  
-  return mask;
-}
-
+/*
 void getCardFeatures(const Mat& card)
 {
   const auto contours = computeCardContours(card);
@@ -278,17 +184,10 @@ void getCardFeatures(const Mat& card)
             << std::endl;
   waitKey();
 }
-
-extractcards::Cards locateSquares(const Mat& image) {
-  Mat blurred;
-  GaussianBlur(image, blurred, Size(17, 17), 0, 0);
-  return extractcards::find(blurred);  
-}
+*/
 
 void Otsu_Demo( int, void* )
-{
-
-}
+{}
 
 int main(int argc, char** argv)
 {
@@ -320,9 +219,9 @@ int main(int argc, char** argv)
     Mat frame;
     cap >> frame; // get a new frame from camera
 
-    const auto cards = extractcards::find(frame);
+    const auto cards = setsolver::find(frame);
 
-    if (0 == cards.size() % 3) {
+    if (cards.size() && 0 == cards.size() % 3) {
       /// Draw contours
       Mat drawing = frame.clone(); 
       for( int i = 0; i< cards.size(); i++ ) {
@@ -332,48 +231,13 @@ int main(int argc, char** argv)
 
       imshow("contours", drawing);
       waitKey(50);
-    }
-    
 
-    //const auto squares = locateSquares(frame);
-    /*
-    if (0 == squares.size() % 3) {
-      auto copy = frame.clone();
-      drawSquares(copy, squares);
-      waitKey();
+      const auto featureSet = setsolver::getCardFeatures(frame, cards);
+      // for (const auto& features: featureSet) {        
+      //   std::cout << features << std::endl;
+      // }
     }
-    */
   }
-
-  /*
-  for(int i = 0; names[i] != 0; i++) {
-
-    Mat image = imread(names[i], 1);
-      if( image.empty() )
-        {
-          cout << "Couldn't load " << names[i] << endl;
-          continue;
-        }
-
-      // imshow(wndname, image);
-      // waitKey();
-
-      const auto squares = locateSquares(image);
-      if (0 != squares.size() % 3) {
-        cout << "unexpected number of cards detected: " << squares.size()
-             << endl;
-        exit(1);
-      }
-      for (const auto& square: squares) {
-        Mat card = image(boundingRect(square));
-
-        imshow(wndname, card);
-        waitKey();
-
-        getCardFeatures(card);
-      }
-    }
-*/
 
   return 0;
 }
