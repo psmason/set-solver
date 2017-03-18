@@ -6,6 +6,7 @@
 
 #include <color.h>
 
+#include <array>
 #include <vector>
 #include <iostream>
 
@@ -13,7 +14,8 @@ namespace setsolver {
   namespace {
     using namespace cv;
     using namespace std;
-    using Contours = vector<vector<Point>>;
+    using Contour = vector<Point>;
+    using Contours = vector<Contour>;
     
     Mat computeFeatureMask(const Mat& card,
                            const vector<vector<Point>>& contours) {
@@ -25,7 +27,7 @@ namespace setsolver {
       return mask;
     }
 
-    Contours computeCardContours(const Mat& card) {
+    Contours computeFeatureContours(const Mat& card) {
       using namespace cv;
       Mat gray;
       cvtColor(card, gray, CV_BGR2GRAY);
@@ -47,12 +49,30 @@ namespace setsolver {
       // holes between edge segments
       dilate(canny, canny, Mat(), Point(-1,-1));
 
+      imshow("tform-dilated", canny);
+
       Contours contours;
       findContours(canny,
                    contours,
                    CV_RETR_EXTERNAL,
                    CV_CHAIN_APPROX_SIMPLE);
 
+      // filtering out contours resembling set shapes
+      auto itr = std::partition(contours.begin(), contours.end(),
+                                [](const Contour& contour) {
+                                  // http://docs.opencv.org/3.2.0/d1/d32/tutorial_py_contour_properties.html
+                                  const auto area = contourArea(contour);
+                                  if (area < 1500.0) {
+                                    return false;
+                                  }
+                                  
+                                  Contour hull;
+                                  convexHull(Mat(contour), hull);
+                                  const auto solidity = area/contourArea(hull);
+                                  return solidity > 0.8;
+                                });
+      contours.erase(itr, contours.end());
+      
       return contours;
     }
 
@@ -73,6 +93,50 @@ namespace setsolver {
     return stream;
   }
 
+  void orderPoints(std::array<Point2f, 4>& points) {
+    // assumes points are (column, row) coordinates.
+    // order clockwise from bottom left corner.
+
+    // sort by column
+    std::sort(points.begin(), points.end(),
+              [](const Point2f& lhs, const Point2f& rhs) {
+                return lhs.x < rhs.x;
+              });
+
+    // sort by row
+    std::sort(points.begin(), points.begin()+2,
+              [](const Point2f& lhs, const Point2f& rhs) {
+                return lhs.y > rhs.y;
+              });
+    std::sort(points.begin()+2, points.end(),
+              [](const Point2f& lhs, const Point2f& rhs) {
+                return lhs.y < rhs.y;
+              });
+  }
+
+  Mat correctCard(const Mat& maskedFrame, const Contour& cardContour) {
+    // correcting for rotations
+    const auto rect = minAreaRect(cardContour);
+      
+    // normalize the card accounting for rotation
+    std::array<Point2f, 4> warpedPts;
+    rect.points(warpedPts.begin());      
+    orderPoints(warpedPts);
+
+    std::array<Point2f, 4> correctedPts;
+    correctedPts[0] = cv::Point2f(0, 150);
+    correctedPts[1] = cv::Point2f(0, 0);
+    correctedPts[2] = cv::Point2f(250, 0);
+    correctedPts[3] = cv::Point2f(250, 150);
+
+    cv::Mat transform = getPerspectiveTransform(warpedPts.begin(),     
+                                                correctedPts.begin());
+    cv::Mat warpedImg;
+    cv::warpPerspective(maskedFrame, warpedImg, transform, Size(250,150));
+
+    return warpedImg;
+  }
+
   FeatureSet getCardFeatures(const Mat& frame, const Cards& cards) {
 
     // black out all pixels not within the cards
@@ -83,87 +147,21 @@ namespace setsolver {
       drawContours(copy, cards, i, CV_RGB(255, 255, 255), CV_FILLED);
     }
 
-    Mat masked;
-    bitwise_and(frame, copy, masked);
+    Mat maskedFrame;
+    bitwise_and(frame, copy, maskedFrame);
     //auto masked = frame & copy;
 
-    imshow("masked", masked);
+    imshow("masked", maskedFrame);
     //imshow("card region", masked);
     waitKey(50);
     
     FeatureSet featureSet;
     for (const auto& cardContour: cards) {
 
-      const auto rect = minAreaRect(cardContour);
-      /*
-       cv::Mat rot_mat = cv::getRotationMatrix2D(rect.center, rect.angle, 1);
-
-       cv::Mat rotated;
-       auto img = masked.clone();
-       cv::warpAffine(img, rotated, rot_mat, img.size(), cv::INTER_CUBIC);
-
-       //imshow("bounded", masked(rect.boundingRect()));
-       imshow("transformed", rotated);
-       waitKey();
-      */
-      
-      // normalize the card accounting for rotation
-      cv::Point2f pts[4];
-      rect.points(pts);
+      const auto corrected = correctCard(maskedFrame, cardContour);      
+      auto contours = computeFeatureContours(corrected);
 
       /*
-      std::cout << "rect points" << std::endl;
-      std::cout << pts[0] << std::endl;
-      std::cout << pts[1] << std::endl;
-      std::cout << pts[2] << std::endl;
-      std::cout << pts[3] << std::endl;
-      */
-      
-      cv::Point2f warpedPts[4];
-      warpedPts[0] = cv::Point2f(0,150);
-      warpedPts[1] = cv::Point2f(0, 0);
-      warpedPts[2] = cv::Point2f(250, 0);
-      warpedPts[3] = cv::Point2f(250, 150);
-
-      cv::Mat transform = getPerspectiveTransform(pts,     
-                                                  warpedPts);
-      cv::Mat warpedImg;
-      cv::warpPerspective(masked, warpedImg, transform, Size(250,150));
-
-      imshow("bounded", masked(rect.boundingRect()));
-      imshow("transformed", warpedImg);
-      waitKey();
-
-
-      // cv::Size size = rect.size();
-      // Mat dst(size, CV_8U);
-      
-      /*
-      Mat card = masked(rect.boundingRect());
-
-      cv::Point2f ptCp(card.cols*0.5, card.rows*0.5);
-      cv::Mat M = cv::getRotationMatrix2D(ptCp, rect.angle, 1.0);
-
-      Mat dst;
-      double w = rect.boundingRect().size().width;
-      double h = rect.boundingRect().size().height;
-      double d = sqrt(w*w + h*h);
-      cv::warpAffine(card, dst, M, Size(d,d), cv::INTER_CUBIC);
-
-      imshow("card rect", card);
-      imshow("card rotated", dst);
-      waitKey();
-      */
-
-      /*
-      Mat card = masked(boundingRect(cardContour));
-
-      imshow("card", card);
-      waitKey(); 
-      */
-
-      /*
-      const auto contours = computeCardContours(card);
       const auto mask = computeFeatureMask(card, contours);     
       const auto color = computeColor(card, mask);
       */
