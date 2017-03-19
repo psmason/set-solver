@@ -4,6 +4,7 @@
 
 #include <cards.h>
 #include <color.h>
+#include <symbol.h>
 
 #include <vector>
 
@@ -11,6 +12,7 @@ namespace setsolver {
 
   struct CardFeatures {
     Color color;
+    Symbol symbol;
   };
   std::ostream& operator<< (std::ostream& stream, const CardFeatures& cardFeatures);
 

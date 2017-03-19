@@ -20,12 +20,6 @@
 using namespace cv;
 using namespace std;
 
-enum class Symbol {
-  DIAMOND,
-  SQUIGGLE,
-  OVAL,
-};
-
 using Contour = vector<Point>;
 
 static void help()
@@ -107,17 +101,6 @@ Shading computeShading(const Mat& card, const Mat& mask)  {
   }
 }
 
-std::string symbolToString(const Symbol symbol) {
-  switch (symbol) {
-  case Symbol::DIAMOND:
-    return "DIAMOND";
-  case Symbol::SQUIGGLE:
-    return "SQUIGGLE";
-  case Symbol::OVAL:
-    return "OVAL";
-  }
-}
-
 void drawContour(const Mat& card,
                  const vector<Point>& contour) {
   vector<vector<Point>> contours;
@@ -130,34 +113,6 @@ void drawContour(const Mat& card,
   // imshow("symbol contour", mask);
   // waitKey();
 }
-
-Symbol computeSymbol(const Mat& card,
-                     const vector<Point>& contour) {
-  vector<Point> approx;
-  approxPolyDP(Mat(contour), approx, arcLength(Mat(contour), true)*0.02, true);
-
-  if (!isContourConvex(approx)) {
-    return Symbol::SQUIGGLE;
-  }
-
-  // identify ratio of contour area to min bounding rectangle area.
-  // oval is assumed to have a higher ratio.
-  const auto rec = minAreaRect(approx);
-  const auto area = contourArea(approx, false);
-  const auto ratio = area / rec.size.area();
-
-  std::cout << "rectangle: " << rec.size << std::endl;
-  std::cout << "area: " << area << std::endl;
-  std::cout << "ratio: " << area / rec.size.area() << std::endl;
-  
-  if (ratio > 0.8) {
-    return Symbol::OVAL;    
-  }
-
-  return Symbol::DIAMOND;
-}
-
-
 
 /*
 void getCardFeatures(const Mat& card)

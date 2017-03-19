@@ -5,6 +5,7 @@
 #include <opencv2/highgui.hpp>
 
 #include <color.h>
+#include <symbol.h>
 
 #include <array>
 #include <vector>
@@ -87,7 +88,8 @@ namespace setsolver {
   }
 
   std::ostream& operator<< (std::ostream& stream, const CardFeatures& cardFeatures) {
-    stream << "color=" << colorToString(cardFeatures.color);
+    stream << "color=" << colorToString(cardFeatures.color)
+           << "\tsymbol=" << cardFeatures.symbol;
     return stream;
   }
 
@@ -156,9 +158,11 @@ namespace setsolver {
       auto contours = computeFeatureContours(corrected);
 
       const auto featureMask = computeFeatureMask(corrected, contours);
-      const auto color = computeColor(corrected, featureMask);
+      //const auto color = computeColor(corrected, featureMask);
+      const auto symbol = computeSymbol(corrected, contours.front());
 
-      std::cout << CardFeatures{color} << std::endl;
+      std::cout << CardFeatures{Color::GREEN, symbol} << std::endl;
+      imshow("corrected card", corrected);
       waitKey();
       
       /**/
