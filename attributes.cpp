@@ -18,11 +18,11 @@ namespace setsolver {
     using Contours = vector<Contour>;
     
     Mat computeFeatureMask(const Mat& card,
-                           const vector<vector<Point>>& contours) {
+                           const Contours& contours) {
       using namespace cv;
       Mat mask(card.size(), CV_8U);
       mask = 0;
-      drawContours(mask, contours, 0, 255,-1);
+      drawContours(mask, contours, 0, 255, CV_FILLED);
   
       return mask;
     }
@@ -48,8 +48,6 @@ namespace setsolver {
       // dilate canny output to remove potential
       // holes between edge segments
       dilate(canny, canny, Mat(), Point(-1,-1));
-
-      imshow("tform-dilated", canny);
 
       Contours contours;
       findContours(canny,
@@ -142,17 +140,13 @@ namespace setsolver {
     // black out all pixels not within the cards
     auto copy = frame.clone();
     copy = 0;
-
     for (int i=0; i<cards.size(); ++i) {
       drawContours(copy, cards, i, CV_RGB(255, 255, 255), CV_FILLED);
     }
-
     Mat maskedFrame;
     bitwise_and(frame, copy, maskedFrame);
-    //auto masked = frame & copy;
 
     imshow("masked", maskedFrame);
-    //imshow("card region", masked);
     waitKey(50);
     
     FeatureSet featureSet;
@@ -161,10 +155,13 @@ namespace setsolver {
       const auto corrected = correctCard(maskedFrame, cardContour);      
       auto contours = computeFeatureContours(corrected);
 
-      /*
-      const auto mask = computeFeatureMask(card, contours);     
-      const auto color = computeColor(card, mask);
-      */
+      const auto featureMask = computeFeatureMask(corrected, contours);
+      const auto color = computeColor(corrected, featureMask);
+
+      std::cout << CardFeatures{color} << std::endl;
+      waitKey();
+      
+      /**/
       // featureSet.push_back(CardFeatures{color});
     }
   
