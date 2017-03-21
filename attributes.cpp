@@ -89,7 +89,8 @@ namespace setsolver {
 
   std::ostream& operator<< (std::ostream& stream, const CardFeatures& cardFeatures) {
     stream << "color=" << colorToString(cardFeatures.color)
-           << "\tsymbol=" << cardFeatures.symbol;
+           << "\tsymbol=" << cardFeatures.symbol
+           << "\tshading=" << cardFeatures.shading;
     return stream;
   }
 
@@ -154,15 +155,16 @@ namespace setsolver {
     FeatureSet featureSet;
     for (const auto& cardContour: cards) {
 
-      const auto corrected = correctCard(maskedFrame, cardContour);      
+      const auto corrected = correctCard(maskedFrame, cardContour);
+      imshow("corrected card", corrected);
       auto contours = computeFeatureContours(corrected);
 
       const auto featureMask = computeFeatureMask(corrected, contours);
-      //const auto color = computeColor(corrected, featureMask);
+      const auto color = computeColor(corrected, featureMask, contours.front());
       const auto symbol = computeSymbol(corrected, contours.front());
+      //const auto shading = computeShading(corrected, featureMask);
 
-      std::cout << CardFeatures{Color::GREEN, symbol} << std::endl;
-      imshow("corrected card", corrected);
+      std::cout << CardFeatures{color, symbol, Shading::SOLID} << std::endl;
       waitKey();
       
       /**/

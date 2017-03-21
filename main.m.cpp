@@ -50,56 +50,7 @@ static void drawSquares( Mat& image, const vector<vector<Point> >& squares )
   imshow(wndname, image);
 }
 
-enum class Shading {
-  SOLID,
-  STRIPED,
-  OPEN,
-};
 
-std::string ShadingToString(const Shading color) {
-  switch (color) {
-  case Shading::SOLID:
-    return "SOLID";
-  case Shading::STRIPED:
-    return "STRIPED";
-  case Shading::OPEN:
-    return "OPEN";
-  }
-}
-
-Shading computeShading(const Mat& card, const Mat& mask)  {
-  // run a threshol to make the image black/white.
-  // let the fraction of white pixels determing shading.
-  Mat gray;
-  cvtColor(card, gray, COLOR_BGR2GRAY);
-  
-  Mat binary;
-  cv::threshold(gray, binary, 185.0, 255.0, THRESH_BINARY_INV);
-
-  // std::cout << "showing threshold" << std::endl;
-  // imshow(wndname, binary);
-  // waitKey();
-
-  // std::cout << "showing shading mask" << std::endl;
-  // imshow(wndname, mask);
-  // waitKey();
-  
-  // bitwise_and(binary, mask, binary);
-  // imshow(wndname, binary);
-  // waitKey();
-
-  std::cout << "shading mean: " << mean(binary, mask) << std::endl;
-  const auto meanShading = mean(binary, mask)[0];
-  if (meanShading < 100) {
-    return Shading::OPEN;
-  }
-  else if (meanShading > 190) {
-    return Shading::SOLID;
-  }
-  else {
-    return Shading::STRIPED;
-  }
-}
 
 void drawContour(const Mat& card,
                  const vector<Point>& contour) {
@@ -118,7 +69,7 @@ void drawContour(const Mat& card,
 void getCardFeatures(const Mat& card)
 {
   const auto contours = computeCardContours(card);
-  std::cout << "object count: " << contours.size() << std::endl;
+  std::cout << "object count: " << contours.size()x << std::endl;
 
   const auto featureMask = computeFeatureMask(card, contours);
 
@@ -177,6 +128,9 @@ int main(int argc, char** argv)
     const auto cards = setsolver::find(frame);
 
     if (cards.size() && 0 == cards.size() % 3) {
+      imwrite("./frame.JPG", frame);
+      
+      
       /// Draw contours
       Mat drawing = frame.clone(); 
       for( int i = 0; i< cards.size(); i++ ) {

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <opencv2/core.hpp>
+#include <vector>
+
 namespace cv {
   class Mat;
 }
@@ -12,6 +15,8 @@ namespace setsolver {
     PURPLE,
   };
 
-  Color computeColor(const cv::Mat& card, const cv::Mat& mask);
+  Color computeColor(const cv::Mat& card,
+                     const cv::Mat& mask,
+                     const std::vector<cv::Point>& contour);
 
 }

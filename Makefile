@@ -3,6 +3,7 @@ SRCS += cards.cpp
 SRCS += attributes.cpp
 SRCS += color.cpp
 SRCS += symbol.cpp
+SRCS += shading.cpp
 
 FLAGS  = -I.
 FLAGS += `pkg-config --cflags --libs opencv`
