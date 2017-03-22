@@ -46,7 +46,7 @@ namespace setsolver {
       contourMask = 0;
 
       // draw contours so that we are confidence we exclude all colors
-      drawContours(contourMask, contours, 0, 255, 16);       // includes colors
+      drawContours(contourMask, contours, 0, 255, 16);       // includes border colors and exterior
       drawContours(contourMask, contours, 0, 0, 8);          // excludes border colors
       drawContours(contourMask, contours, 0, 0, CV_FILLED);  // excludes interior
       
