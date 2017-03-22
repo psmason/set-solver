@@ -53,8 +53,7 @@ namespace setsolver {
     waitKey(50);
 
     vector<vector<Point>> imgContours;
-    vector<Vec4i> hierarchy;
-    findContours(canny, imgContours, hierarchy, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+    findContours(canny, imgContours, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
     
     vector<vector<Point>> cardContours;
     for(size_t i = 0; i < imgContours.size(); i++) {

@@ -2,7 +2,6 @@
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
 
 #include <iostream>
 #include <vector>
@@ -136,16 +135,8 @@ namespace setsolver {
                      const Mat& mask,
                      const std::vector<cv::Point>& contour)
   {
-    using namespace cv;
-
-    Mat img;
-    card.copyTo(img, mask);
-    imshow("masked", img);
-    
     const auto backgroundColor = getBackgroundColor(card, contour);
     auto filtered = filterBackgroundColor(card, mask, backgroundColor);
-    imshow("filtered", filtered);
-
     const auto densities = computeRGPDensities(filtered, mask);
     return getColorFromDensities(densities);
   }

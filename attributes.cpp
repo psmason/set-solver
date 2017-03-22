@@ -162,9 +162,9 @@ namespace setsolver {
       const auto featureMask = computeFeatureMask(corrected, contours);
       const auto color = computeColor(corrected, featureMask, contours.front());
       const auto symbol = computeSymbol(corrected, contours.front());
-      //const auto shading = computeShading(corrected, featureMask);
+      const auto shading = computeShading(corrected, featureMask, contours.front());
 
-      std::cout << CardFeatures{color, symbol, Shading::SOLID} << std::endl;
+      std::cout << CardFeatures{color, symbol, shading} << std::endl;
       waitKey();
       
       /**/
