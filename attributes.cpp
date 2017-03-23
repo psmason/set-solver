@@ -137,11 +137,10 @@ namespace setsolver {
     for (int i=0; i<cards.size(); ++i) {
       drawContours(copy, cards, i, CV_RGB(255, 255, 255), CV_FILLED);
     }
+    
     Mat maskedFrame;
     bitwise_and(frame, copy, maskedFrame);
-
     imshow("masked", maskedFrame);
-    waitKey(50);
     
     FeatureSet featureSet;
     for (const auto& cardContour: cards) {
@@ -150,14 +149,19 @@ namespace setsolver {
       imshow("corrected card", corrected);
       auto contours = computeFeatureContours(corrected);
 
+      if (0 == contours.size() || 3 < contours.size()) {
+        // invalid read on the webcame frame.
+        // hopefully next iteration works.
+        featureSet.clear();
+        return featureSet;
+      }
+
       const auto featureMask = computeFeatureMask(corrected, contours);
       const auto color = computeColor(corrected, featureMask, contours.front());
       const auto symbol = computeSymbol(corrected, contours.front());
       const auto shading = computeShading(corrected, featureMask, contours.front());
 
-      std::cout << CardFeatures{color, symbol, shading, contours.size()} << std::endl;
-      waitKey();
-      
+      std::cout << CardFeatures{color, symbol, shading, contours.size()} << std::endl;     
       featureSet.push_back(CardFeatures{color, symbol, shading, contours.size()});
     }
   
