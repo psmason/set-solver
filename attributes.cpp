@@ -74,23 +74,14 @@ namespace setsolver {
       
       return contours;
     }
-
-    std::string colorToString(const Color color) {
-      switch (color) {
-      case Color::RED:
-        return "RED";
-      case Color::PURPLE:
-        return "PURPLE";
-      case Color::GREEN:
-        return "GREEN";
-      }
-    }
+    
   }
 
   std::ostream& operator<< (std::ostream& stream, const CardFeatures& cardFeatures) {
-    stream << "color=" << colorToString(cardFeatures.color)
+    stream << "color=" << cardFeatures.color
            << "\tsymbol=" << cardFeatures.symbol
-           << "\tshading=" << cardFeatures.shading;
+           << "\tshading=" << cardFeatures.shading
+           << "\tnumber=" << cardFeatures.number;
     return stream;
   }
 
@@ -164,11 +155,10 @@ namespace setsolver {
       const auto symbol = computeSymbol(corrected, contours.front());
       const auto shading = computeShading(corrected, featureMask, contours.front());
 
-      std::cout << CardFeatures{color, symbol, shading} << std::endl;
+      std::cout << CardFeatures{color, symbol, shading, contours.size()} << std::endl;
       waitKey();
       
-      /**/
-      // featureSet.push_back(CardFeatures{color});
+      featureSet.push_back(CardFeatures{color, symbol, shading, contours.size()});
     }
   
     return featureSet;

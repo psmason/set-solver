@@ -128,7 +128,24 @@ namespace setsolver {
 
       return densities;
     }
+
+    std::string colorToString(const Color& color) {
+      switch (color) {
+      case Color::RED:
+        return "RED";
+      case Color::PURPLE:
+        return "PURPLE";
+      case Color::GREEN:
+        return "GREEN";
+      }
+    }
                              
+  }
+
+  std::ostream& operator<< (std::ostream& stream, const Color& color)
+  {
+    stream << colorToString(color);
+    return stream;
   }
     
   Color computeColor(const Mat& card,

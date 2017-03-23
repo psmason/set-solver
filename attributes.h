@@ -12,9 +12,10 @@
 namespace setsolver {  
 
   struct CardFeatures {
-    Color color;
-    Symbol symbol;
+    Color   color;
+    Symbol  symbol;
     Shading shading;
+    size_t  number;
   };
   std::ostream& operator<< (std::ostream& stream, const CardFeatures& cardFeatures);
 

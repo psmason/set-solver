@@ -15,7 +15,8 @@ namespace setsolver {
     GREEN,
     PURPLE,
   };
-
+  std::ostream& operator<< (std::ostream& stream, const Color& color);
+  
   Color computeColor(const cv::Mat& card,
                      const cv::Mat& mask,
                      const std::vector<cv::Point>& contour);
