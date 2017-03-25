@@ -3,8 +3,6 @@
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
 
-#include <iostream>
-
 namespace setsolver {
 
   namespace {
@@ -29,17 +27,10 @@ namespace setsolver {
                     const Matches& matches,
                     const Cards& cards)
   {    
-    for (int i=0; i<matches.size(); ++i) {
+    for (size_t i=0; i<matches.size(); ++i) {
       const auto& match = matches[i];
-      assert(3 == match.size());
-
-      std::cout << "match found! ";
-      for (const auto& index: match) {
-        std::cout << " " << index;
-      }
-      std::cout << std::endl;
-        
-      for (int j=0; j<match.size(); ++j) {
+      assert(3 == match.size());       
+      for (size_t j=0; j<match.size(); ++j) {
         Mat overlay;
         canvas.copyTo(overlay);
         const auto card = cards[match[j]];

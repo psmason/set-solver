@@ -23,6 +23,8 @@ namespace setsolver {
         return "STRIPED";
       case Shading::OPEN:
         return "OPEN";
+      default:
+        throw std::runtime_error("unknown color");
       }
     }
 
@@ -64,7 +66,6 @@ namespace setsolver {
   }
 
   Shading computeShading(const Mat& card,
-                         const Mat& mask,
                          const std::vector<cv::Point>& contour)  {
     Contours contours;
     contours.push_back(contour);

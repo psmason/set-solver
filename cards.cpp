@@ -8,8 +8,6 @@
 
 namespace {
 
-  int CANNY_THRESHOLD = 50;
-  int THRESHOLDS_TO_CHECK = 11;
   double OTSU_MULTIPLIER = 0.35;
 
   // helper function:

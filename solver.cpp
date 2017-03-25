@@ -16,7 +16,7 @@ namespace setsolver {
 
     NumberBuckets organize(const FeatureSet& featureSet) {
       NumberBuckets numberBuckets;
-      for (int i=0; i<featureSet.size(); ++i) {
+      for (size_t i=0; i<featureSet.size(); ++i) {
         const auto& feature = featureSet[i];
         numberBuckets[feature.number]
           [feature.shading]
@@ -56,72 +56,59 @@ namespace setsolver {
       return true;
     }
 
+    template <typename T>
+    T getSatisfyingFeature(const T& f1,
+                           const T& f2,
+                           set<T> featureSet) {
+      if (f1 == f2) {
+        return f1;
+      }
+      else {
+        featureSet.erase(f1);
+        featureSet.erase(f2);
+        assert(1 == featureSet.size());
+        return *featureSet.begin();
+      }
+    }
+
     CardFeatures getSatisfyingCard(const CardFeatures& card1,
                                    const CardFeatures& card2) {
       // for each card feature, all three cards must be equivalent
       // or all different.
       CardFeatures feature;
+
+      feature.color = getSatisfyingFeature(card1.color,
+                                           card2.color,
+                                           set<Color>{
+                                             Color::GREEN,
+                                             Color::RED,
+                                             Color::PURPLE
+                                           });
+
+      feature.symbol = getSatisfyingFeature(card1.symbol,
+                                            card2.symbol,
+                                            set<Symbol>{
+                                              Symbol::DIAMOND,
+                                              Symbol::SQUIGGLE,
+                                              Symbol::OVAL
+                                            });
       
-      if (card1.color == card2.color) {
-        feature.color = card1.color;        
-      }
-      else {
-        set<Color> colors = {
-          Color::GREEN,
-          Color::RED,
-          Color::PURPLE
-        };
-        colors.erase(card1.color);
-        colors.erase(card2.color);
-        assert(1 == colors.size());
-        feature.color = *colors.begin();
-      }
+      feature.shading = getSatisfyingFeature(card1.shading,
+                                             card2.shading,
+                                             set<Shading>{
+                                               Shading::SOLID,
+                                               Shading::STRIPED,
+                                               Shading::OPEN
+                                             });
 
-      if (card1.symbol == card2.symbol) {
-        feature.symbol = card1.symbol;        
-      }
-      else {
-        set<Symbol> symbols = {
-          Symbol::DIAMOND,
-          Symbol::SQUIGGLE,
-          Symbol::OVAL
-        };
-        symbols.erase(card1.symbol);
-        symbols.erase(card2.symbol);
-        assert(1 == symbols.size());
-        feature.symbol = *symbols.begin();
-      }
-
-      if (card1.shading == card2.shading) {
-        feature.shading = card1.shading;        
-      }
-      else {
-        set<Shading> shadings = {
-          Shading::SOLID,
-          Shading::STRIPED,
-          Shading::OPEN
-        };
-        shadings.erase(card1.shading);
-        shadings.erase(card2.shading);
-        assert(1 == shadings.size());
-        feature.shading = *shadings.begin();
-      }
+      feature.number = getSatisfyingFeature(card1.number,
+                                            card2.number,
+                                            set<size_t>{
+                                              1,
+                                              2,
+                                              3,
+                                            });
       
-      if (card1.number == card2.number) {
-        feature.number = card1.number;        
-      }
-      else {
-        set<size_t> numbers = {
-          1,
-          2,
-          3
-        };
-        numbers.erase(card1.number);
-        numbers.erase(card2.number);
-        assert(1 == numbers.size());
-        feature.number = *numbers.begin();
-      }
-
       return feature;
     }
     

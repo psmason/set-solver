@@ -14,12 +14,12 @@ namespace setsolver {
   namespace {
     using namespace cv;
     using namespace std;
+
     using Contour = vector<Point>;
     using Contours = vector<Contour>;
     
     Mat computeFeatureMask(const Mat& card,
                            const Contours& contours) {
-      using namespace cv;
       Mat mask(card.size(), CV_8U);
       mask = 0;
       drawContours(mask, contours, 0, 255, CV_FILLED);
@@ -28,7 +28,6 @@ namespace setsolver {
     }
 
     Contours computeFeatureContours(const Mat& card) {
-      using namespace cv;
       Mat gray;
       cvtColor(card, gray, CV_BGR2GRAY);
 
@@ -133,7 +132,7 @@ namespace setsolver {
     // black out all pixels not within the cards
     auto copy = frame.clone();
     copy = 0;
-    for (int i=0; i<cards.size(); ++i) {
+    for (size_t i=0; i<cards.size(); ++i) {
       drawContours(copy, cards, i, CV_RGB(255, 255, 255), CV_FILLED);
     }
     
@@ -157,8 +156,8 @@ namespace setsolver {
 
       const auto featureMask = computeFeatureMask(corrected, contours);
       const auto color = computeColor(corrected, featureMask, contours.front());
-      const auto symbol = computeSymbol(corrected, contours.front());
-      const auto shading = computeShading(corrected, featureMask, contours.front());
+      const auto symbol = computeSymbol(contours.front());
+      const auto shading = computeShading(corrected, contours.front());
       featureSet.push_back(CardFeatures{color, symbol, shading, contours.size()});
     }
   

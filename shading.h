@@ -19,7 +19,6 @@ namespace setsolver {
   std::ostream& operator<< (std::ostream& stream, const Shading& shading);
 
   Shading computeShading(const cv::Mat& card,
-                         const cv::Mat& mask,
                          const std::vector<cv::Point>& contour);
 
 }

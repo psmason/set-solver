@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-int main(int argc, char* argv[])
+int main()
 {
   using namespace cv;
   
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     if (cards.size() && 0 == cards.size() % 3) {
       /// Draw contours
       Mat drawing = frame.clone(); 
-      for( int i = 0; i< cards.size(); i++ ) {
+      for(size_t i = 0; i< cards.size(); i++) {
         drawContours(drawing,
                      cards,
                      i,

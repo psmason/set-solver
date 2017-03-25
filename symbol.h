@@ -17,6 +17,6 @@ namespace setsolver {
   };
   std::ostream& operator<< (std::ostream& stream, const Symbol& symbol);
 
-  Symbol computeSymbol(const cv::Mat& card, const std::vector<cv::Point>& contour);
+  Symbol computeSymbol(const std::vector<cv::Point>& contour);
 
 }

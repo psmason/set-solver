@@ -18,6 +18,8 @@ namespace setsolver {
         return "SQUIGGLE";
       case Symbol::OVAL:
         return "OVAL";
+      default:
+        throw std::runtime_error("unknown symbol");
       }
     }
 
@@ -29,7 +31,7 @@ namespace setsolver {
     return stream;
   }
 
-  Symbol computeSymbol(const cv::Mat& card, const vector<cv::Point>& contour)
+  Symbol computeSymbol(const vector<Point>& contour)
   {
     vector<Point> approx;
     approxPolyDP(Mat(contour), approx, arcLength(Mat(contour), true)*0.02, true);

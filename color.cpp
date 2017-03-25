@@ -137,6 +137,8 @@ namespace setsolver {
         return "PURPLE";
       case Color::GREEN:
         return "GREEN";
+      default:
+        throw std::runtime_error("unknown color");
       }
     }
                              

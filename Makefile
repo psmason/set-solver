@@ -10,7 +10,7 @@ SRCS += paintmatches.cpp
 FLAGS  = -I.
 FLAGS += `pkg-config --cflags --libs opencv`
 
-CC = g++ -std=c++11
+CC = g++ -std=c++11 -Wall -Wextra
 
 task:
 	$(CC) $(SRCS) $(FLAGS)
