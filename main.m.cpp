@@ -1,7 +1,3 @@
-// The "Square Detector" program.
-// It loads several images sequentially and tries to find squares in
-// each image
-
 #include <cards.h>
 #include <attributes.h>
 #include <solver.h>
@@ -12,6 +8,10 @@
 #include "opencv2/highgui.hpp"
 
 #include <iostream>
+
+namespace {
+  cv::Scalar CARD_HIGHLIGHT(124, 252, 0);
+}
 
 int main()
 {
@@ -35,7 +35,7 @@ int main()
         drawContours(drawing,
                      cards,
                      i,
-                     Scalar(124, 252, 0),
+                     CARD_HIGHLIGHT,
                      1);
       }
       

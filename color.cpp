@@ -58,7 +58,7 @@ namespace setsolver {
     }
 
     array<float, 3> computeRGPDensities(const Mat& filtered,
-                                             const Mat& mask) {
+                                        const Mat& mask) {
       // return the red/green/purple intensities from a histogram
       Mat hsv;
       cvtColor(filtered, hsv, CV_BGR2HSV);
