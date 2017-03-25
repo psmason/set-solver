@@ -9,7 +9,6 @@
 
 #include <array>
 #include <vector>
-#include <iostream>
 
 namespace setsolver {  
   namespace {
@@ -160,8 +159,6 @@ namespace setsolver {
       const auto color = computeColor(corrected, featureMask, contours.front());
       const auto symbol = computeSymbol(corrected, contours.front());
       const auto shading = computeShading(corrected, featureMask, contours.front());
-
-      std::cout << CardFeatures{color, symbol, shading, contours.size()} << std::endl;     
       featureSet.push_back(CardFeatures{color, symbol, shading, contours.size()});
     }
   

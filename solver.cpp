@@ -145,11 +145,15 @@ namespace setsolver {
         if (getSatisfyingIndex(numberBuckets,
                                satisfyingCard,
                                satisfyingIndex)) {
-          const Match candidate = {i, j, satisfyingIndex};
+          Match candidate = {i, j, satisfyingIndex};
           // to avoid duplicates, only add matches which are
           // in sorted order.
           if (std::is_sorted(candidate.begin(), candidate.end())) {
-            matches.push_back(candidate);
+            // in case of featur extraction errors, check if the indexes are
+            // unique. 
+            if (candidate.end() == std::unique(candidate.begin(), candidate.end())) {
+              matches.push_back(candidate);
+            }
           }
         }
       }

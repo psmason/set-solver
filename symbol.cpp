@@ -3,7 +3,6 @@
 #include <opencv2/imgproc.hpp>
 
 #include <vector>
-#include <iostream>
 
 namespace setsolver {
 
@@ -44,10 +43,6 @@ namespace setsolver {
     const auto rec = minAreaRect(approx);
     const auto area = contourArea(approx, false);
     const auto ratio = area / rec.size.area();
-
-    std::cout << "rectangle: " << rec.size << std::endl;
-    std::cout << "area: " << area << std::endl;
-    std::cout << "ratio: " << area / rec.size.area() << std::endl;
   
     if (ratio > 0.8) {
       return Symbol::OVAL;    

@@ -9,6 +9,6 @@ namespace setsolver {
   using Cards = std::vector<Card>;
 
   // finds all cards in the image
-  Cards find(const cv::Mat& image);
+  Cards findCards(const cv::Mat& image);
 
 }

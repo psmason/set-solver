@@ -5,6 +5,7 @@ SRCS += color.cpp
 SRCS += symbol.cpp
 SRCS += shading.cpp
 SRCS += solver.cpp
+SRCS += paintmatches.cpp
 
 FLAGS  = -I.
 FLAGS += `pkg-config --cflags --libs opencv`

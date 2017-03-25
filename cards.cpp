@@ -27,7 +27,7 @@ namespace {
 
 namespace setsolver {
 
-  Cards find(const cv::Mat& image) {
+  Cards findCards(const cv::Mat& image) {
     using namespace cv;
     using namespace std;
 
@@ -50,7 +50,6 @@ namespace setsolver {
     dilate(canny, canny, Mat(), Point(-1,-1));
 
     imshow("canny", canny);
-    waitKey(50);
 
     vector<vector<Point>> imgContours;
     findContours(canny, imgContours, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);

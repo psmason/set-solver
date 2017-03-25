@@ -5,6 +5,7 @@
 #include <cards.h>
 #include <attributes.h>
 #include <solver.h>
+#include <paintmatches.h>
 
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
@@ -25,7 +26,8 @@ int main(int argc, char* argv[])
     Mat frame;
     cap >> frame; // get a new frame from camera
 
-    const auto cards = setsolver::find(frame);
+    const auto cards = setsolver::findCards(frame);
+    std::cout << "cards found: " << cards.size() << std::endl;
     if (cards.size() && 0 == cards.size() % 3) {
       /// Draw contours
       Mat drawing = frame.clone(); 
@@ -34,43 +36,20 @@ int main(int argc, char* argv[])
                      cards,
                      i,
                      Scalar(124, 252, 0),
-                     2,
-                     8);
+                     1);
       }
-
+      
       const auto featureSet = setsolver::getCardFeatures(frame, cards);
-      const auto matches = setsolver::findMatches(featureSet);
-
-      std::array<Scalar, 6> colorWheel;
-      colorWheel[0] = Scalar(0, 0, 255);   // red
-      colorWheel[1] = Scalar(0, 255, 255); // yellow
-      colorWheel[2] = Scalar(0, 255, 0);   // green
-      colorWheel[3] = Scalar(255, 255, 0); // cyan
-      colorWheel[4] = Scalar(255, 0, 0);   // blue
-      colorWheel[5] = Scalar(255, 0, 255); // magenta
-                 
-      for (int i=0; i<matches.size(); ++i) {
-        const auto& match = matches[i];
-        assert(3 == match.size());
-
-        std::cout << "match found! ";
-        for (const auto& index: match) {
-          std::cout << " " << index;
-        }
-        std::cout << std::endl;
-        
-        for (int j=0; j<match.size(); ++j) {
-          Mat overlay;
-          drawing.copyTo(overlay);
-          const auto card = cards[match[j]];
-          const auto center = minAreaRect(card).center;
-          circle(overlay, center, (i+1)*5, colorWheel[i%6], 4);
-          addWeighted(overlay, 0.3, drawing, 0.7, 0, drawing);
-        }
+      std::cout << "features" << std::endl;
+      for (const auto& feature: featureSet) {
+        std::cout << feature << std::endl;
       }
+      const auto matches = setsolver::findMatches(featureSet);
+      setsolver::paintMatches(drawing, matches, cards);
+                 
       imshow("cards", drawing);
-      waitKey(50);
     }
+    waitKey(50);
   }
 
   return 0;
