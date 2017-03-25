@@ -7,8 +7,9 @@ namespace setsolver {
 
   namespace {
     using namespace cv;
+    using namespace std;
     
-    std::array<Scalar, 6> COLOR_WHEEL = {
+    array<Scalar, 6> COLOR_WHEEL = {
       Scalar(0, 0, 255),   // red
       Scalar(0, 255, 255), // yellow
       Scalar(0, 255, 0),   // green
@@ -23,7 +24,7 @@ namespace setsolver {
 
   } // close anonymous
 
-  void paintMatches(cv::Mat& canvas,
+  void paintMatches(Mat& canvas,
                     const Matches& matches,
                     const Cards& cards)
   {    

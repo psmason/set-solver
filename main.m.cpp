@@ -28,9 +28,9 @@ int main()
 
     const auto cards = setsolver::findCards(frame);
     std::cout << "cards found: " << cards.size() << std::endl;
+    Mat drawing = frame.clone(); 
     if (cards.size() && 0 == cards.size() % 3) {
       /// Draw contours
-      Mat drawing = frame.clone(); 
       for(size_t i = 0; i< cards.size(); i++) {
         drawContours(drawing,
                      cards,
@@ -45,10 +45,9 @@ int main()
         std::cout << feature << std::endl;
       }
       const auto matches = setsolver::findMatches(featureSet);
-      setsolver::paintMatches(drawing, matches, cards);
-                 
-      imshow("cards", drawing);
+      setsolver::paintMatches(drawing, matches, cards);                
     }
+    imshow("cards", drawing);
     waitKey(50);
   }
 

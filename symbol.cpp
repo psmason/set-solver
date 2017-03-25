@@ -10,7 +10,7 @@ namespace setsolver {
     using namespace cv;
     using namespace std;
     
-    std::string symbolToString(const Symbol symbol) {
+    string symbolToString(const Symbol symbol) {
       switch (symbol) {
       case Symbol::DIAMOND:
         return "DIAMOND";
@@ -19,13 +19,13 @@ namespace setsolver {
       case Symbol::OVAL:
         return "OVAL";
       default:
-        throw std::runtime_error("unknown symbol");
+        throw runtime_error("unknown symbol");
       }
     }
 
   }
 
-  std::ostream& operator<< (std::ostream& stream, const Symbol& symbol)
+  ostream& operator<< (ostream& stream, const Symbol& symbol)
   {
     stream << symbolToString(symbol);
     return stream;

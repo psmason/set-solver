@@ -1,5 +1,8 @@
 #include <color.h>
 
+#include <types.h>
+#include <utils.h>
+
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -12,11 +15,8 @@ namespace setsolver {
   namespace {
     using namespace std;
     using namespace cv;
-
-    using Contour = vector<Point>;
-    using Contours = vector<Contour>;
     
-    Color getColorFromDensities(const std::array<float, 3>& densities) {
+    Color getColorFromDensities(const array<float, 3>& densities) {
       // assumes red, green, purple values, respectively in the array.
       const auto red = densities[0];
       const auto green = densities[1];
@@ -39,21 +39,7 @@ namespace setsolver {
         }
       }
     }
-
-    Vec3b getBackgroundColor(const Mat& card,
-                             const Contour& contour) {
-      Contours contours;
-      contours.push_back(contour);
-      Mat contourMask(card.size(), CV_8U);
-      contourMask = 0;
-      drawContours(contourMask, contours, 0, 255, 8);
-
-      const auto background = mean(card, contourMask);
-      return Vec3b(background[0],
-                   background[1],
-                   background[2]);
-    }
-
+    
     Mat filterBackgroundColor(const Mat& card,
                               const Mat& mask,
                               const Vec3b& backgroundColor) {
@@ -71,7 +57,7 @@ namespace setsolver {
       return filtered;
     }
 
-    std::array<float, 3> computeRGPDensities(const Mat& filtered,
+    array<float, 3> computeRGPDensities(const Mat& filtered,
                                              const Mat& mask) {
       // return the red/green/purple intensities from a histogram
       Mat hsv;
@@ -129,7 +115,7 @@ namespace setsolver {
       return densities;
     }
 
-    std::string colorToString(const Color& color) {
+    string colorToString(const Color& color) {
       switch (color) {
       case Color::RED:
         return "RED";
@@ -138,13 +124,13 @@ namespace setsolver {
       case Color::GREEN:
         return "GREEN";
       default:
-        throw std::runtime_error("unknown color");
+        throw runtime_error("unknown color");
       }
     }
                              
   }
 
-  std::ostream& operator<< (std::ostream& stream, const Color& color)
+  ostream& operator<< (ostream& stream, const Color& color)
   {
     stream << colorToString(color);
     return stream;
@@ -152,7 +138,7 @@ namespace setsolver {
     
   Color computeColor(const Mat& card,
                      const Mat& mask,
-                     const std::vector<cv::Point>& contour)
+                     const vector<Point>& contour)
   {
     const auto backgroundColor = getBackgroundColor(card, contour);
     auto filtered = filterBackgroundColor(card, mask, backgroundColor);

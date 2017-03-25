@@ -1,11 +1,12 @@
 #include <attributes.h>
 
+#include <color.h>
+#include <symbol.h>
+#include <types.h>
+
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
-
-#include <color.h>
-#include <symbol.h>
 
 #include <array>
 #include <vector>
@@ -14,9 +15,6 @@ namespace setsolver {
   namespace {
     using namespace cv;
     using namespace std;
-
-    using Contour = vector<Point>;
-    using Contours = vector<Contour>;
     
     Mat computeFeatureMask(const Mat& card,
                            const Contours& contours) {
@@ -35,7 +33,7 @@ namespace setsolver {
       GaussianBlur(gray, blurred, Size(9, 9), 0, 0);
   
       Mat _img;
-      double otsu_thresh_val = cv::threshold(blurred,
+      double otsu_thresh_val = threshold(blurred,
                                              _img,
                                              0,
                                              255,
@@ -114,15 +112,15 @@ namespace setsolver {
     orderPoints(warpedPts);
 
     std::array<Point2f, 4> correctedPts;
-    correctedPts[0] = cv::Point2f(0, 150);
-    correctedPts[1] = cv::Point2f(0, 0);
-    correctedPts[2] = cv::Point2f(250, 0);
-    correctedPts[3] = cv::Point2f(250, 150);
+    correctedPts[0] = Point2f(0, 150);
+    correctedPts[1] = Point2f(0, 0);
+    correctedPts[2] = Point2f(250, 0);
+    correctedPts[3] = Point2f(250, 150);
 
-    cv::Mat transform = getPerspectiveTransform(warpedPts.begin(),     
+    Mat transform = getPerspectiveTransform(warpedPts.begin(),     
                                                 correctedPts.begin());
-    cv::Mat warpedImg;
-    cv::warpPerspective(maskedFrame, warpedImg, transform, Size(250,150));
+    Mat warpedImg;
+    warpPerspective(maskedFrame, warpedImg, transform, Size(250,150));
 
     return warpedImg;
   }
@@ -138,7 +136,6 @@ namespace setsolver {
     
     Mat maskedFrame;
     bitwise_and(frame, copy, maskedFrame);
-    imshow("masked", maskedFrame);
     
     FeatureSet featureSet;
     for (const auto& cardContour: cards) {

@@ -7,13 +7,15 @@
 #include <set>
 
 namespace {
-
+  using namespace cv;
+  using namespace std;
+  
   double OTSU_MULTIPLIER = 0.35;
 
   // helper function:
   // finds a cosine of angle between vectors
   // from pt0->pt1 and from pt0->pt2
-  double angle(const cv::Point pt1, const cv::Point pt2, const cv::Point pt0) {
+  double angle(const Point pt1, const Point pt2, const Point pt0) {
     const auto dx1 = pt1.x - pt0.x;
     const auto dy1 = pt1.y - pt0.y;
     const auto dx2 = pt2.x - pt0.x;
@@ -25,15 +27,14 @@ namespace {
 
 namespace setsolver {
 
-  Cards findCards(const cv::Mat& image) {
-    using namespace cv;
-    using namespace std;
+  Cards findCards(const Mat& image) {
+
 
     Mat gray;
     cvtColor(image, gray, CV_BGR2GRAY);
 
     Mat _img;
-    double otsu_thresh_val = cv::threshold(gray,
+    double otsu_thresh_val = threshold(gray,
                                            _img,
                                            0,
                                            255,
