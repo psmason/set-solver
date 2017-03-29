@@ -7,7 +7,7 @@ A card game based on some simple pattern recognization rules.  As of March 2017,
 # Output
 ![Sample Output](/doc/sample-output.JPG)
 
-An image with matching sets indicated with overlayed circles.  In the sample below, red, yellow, and green circles centered on each card indicate the three sets found.  
+An image with matching sets indicated with overlayed circles.  In the sample below, red, yellow, and green circles centered on each card indicate the three sets found.  Additionally, recognized cards will be highlighted in green.
 
 Things aren't yet all that robust, and the top-right set was missed (see the empty squiggles).  Color recognization is a challenge in dim lighting, where the current approach is too sensitive to a purple bias in the webcam feed. 
 
