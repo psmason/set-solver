@@ -15,3 +15,6 @@ Things aren't yet all that robust, and the top-right set was missed (see the emp
 
 # Debug
 Passing in the "-d" flag will trigger debug mode, where the features of the centermost card will be printed to stdout.
+
+# Hardware
+Currently testing using the C270 camera: http://a.co/e2CESYL.  Hopefully I'm not overfitting the problem to this camera. 
