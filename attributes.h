@@ -21,6 +21,6 @@ namespace setsolver {
 
   using FeatureSet = std::vector<CardFeatures>;
 
-  FeatureSet getCardFeatures(const cv::Mat& frame, const Cards& cards);
+  FeatureSet getCardFeatures(const cv::Mat& frame, const Cards& cards, const bool debug=false);
 
 }

@@ -125,7 +125,9 @@ namespace setsolver {
     return warpedImg;
   }
 
-  FeatureSet getCardFeatures(const Mat& frame, const Cards& cards) {
+  FeatureSet getCardFeatures(const Mat& frame,
+                             const Cards& cards,
+                             const bool debug) {
 
     // black out all pixels not within the cards
     auto copy = frame.clone();
@@ -141,7 +143,9 @@ namespace setsolver {
     for (const auto& cardContour: cards) {
 
       const auto corrected = correctCard(maskedFrame, cardContour);
-      imshow("corrected card", corrected);
+      if (debug) {
+        imshow("find attributes - corrected card", corrected);
+      }
       auto contours = computeFeatureContours(corrected);
 
       if (0 == contours.size() || 3 < contours.size()) {

@@ -27,7 +27,8 @@ namespace {
 
 namespace setsolver {
 
-  Cards findCards(const Mat& image) {
+  Cards findCards(const Mat& image,
+                  const bool debug) {
 
 
     Mat gray;
@@ -48,7 +49,9 @@ namespace setsolver {
     // holes between edge segments
     dilate(canny, canny, Mat(), Point(-1,-1));
 
-    imshow("canny", canny);
+    if (debug) {
+      imshow("find cards - canny", canny);
+    }
 
     vector<vector<Point>> imgContours;
     findContours(canny, imgContours, CV_RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
