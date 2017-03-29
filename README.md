@@ -4,6 +4,8 @@ An OpenCV solution to the set card game.  Designed to be hooked into a webcam fe
 # What is Set?
 A card game based on some simple pattern recognization rules.  As of March 2017, the New York Times hosts a daily puzzle at https://www.nytimes.com/crosswords/game/set/?page=set.  The game can be easily purchased from Amazon: http://a.co/0538gqz.  
 
+The official rules can be downloaded (as of March 2017) at: http://www.setgame.com/sites/default/files/instructions/SET%20INSTRUCTIONS%20-%20ENGLISH.pdf .
+
 # Output
 ![Sample Output](/doc/sample-output.JPG)
 
