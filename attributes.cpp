@@ -10,6 +10,7 @@
 
 #include <array>
 #include <vector>
+#include <algorithm>
 
 namespace setsolver {  
   namespace {
@@ -100,6 +101,14 @@ namespace setsolver {
               [](const Point2f& lhs, const Point2f& rhs) {
                 return lhs.y < rhs.y;
               });
+
+    // if ordered point height is greater than width,
+    // a rotation will put the card into a normalized landspace shape.
+    const auto height = points[0].x - points[1].x;
+    const auto width  = points[2].y - points[1].y;
+    if (height > width) {
+      std::rotate(points.begin(), points.begin()+1, points.end());
+    }
   }
 
   Mat correctCard(const Mat& maskedFrame, const Contour& cardContour) {
