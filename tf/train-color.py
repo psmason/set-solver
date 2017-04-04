@@ -1,4 +1,5 @@
 import os
+import random
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +11,7 @@ from tensorflow.python.saved_model import builder as saved_model_builder
 from tensorflow.python.saved_model import signature_constants
 from tensorflow.python.saved_model import signature_def_utils
 from tensorflow.python.saved_model import tag_constants
+from tensorflow.python.saved_model import utils
 
 from six.moves import cPickle as pickle
 
@@ -98,6 +100,13 @@ def splitDatasets():
             rtnTestLabels = np.concatenate([rtnTestLabels, testLabels])
     return rtnTrainingData, rtnValidationData, rtnTestData, rtnTrainingLabels, rtnValidationLabels, rtnTestLabels
 
+def nextTrainingBatch(data, labels, batchSize):
+    indices = random.sample(range(data.shape[0]), batchSize)
+    return {
+        "data" : data[indices, :],
+        "labels" : labels[indices],
+    }
+
 organized = organizeByColor(files)
 print "RED count:", len(organized["RED"])
 print "PURPLE count:", len(organized["PURPLE"])
@@ -121,6 +130,86 @@ train_dataset, train_labels = reformat(trainingData, trainingLabels)
 valid_dataset, valid_labels = reformat(validationData, validationLabels)
 test_dataset, test_labels   = reformat(testData, testLabels)
 
+# Train model
+session = tf.InteractiveSession()
+serializedModel = tf.placeholder(tf.string, name="set_color_model")
+featureConfigs = {"x" : tf.FixedLenFeature(shape=[np.prod(REDUCED_IMAGE_SHAPE)],
+                                           dtype=tf.float32)}
+parsedModel = tf.parse_example(serializedModel, featureConfigs)
+x  = tf.identity(parsedModel['x'], name='x')
+y_ = tf.placeholder('float', shape=[None, 3])
+w  = tf.Variable(tf.truncated_normal([np.prod(REDUCED_IMAGE_SHAPE), 3]))
+b  = tf.Variable(tf.zeros([3]))
+
+session.run(tf.global_variables_initializer())
+y = tf.identity(tf.matmul(x, w) + b, name='y')
+loss = tf.reduce_mean(
+    tf.nn.softmax_cross_entropy_with_logits(logits=y, labels=y_)
+)
+
+optimizer = tf.train.GradientDescentOptimizer(0.5).minimize(loss)
+
+correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
+for i in range(500):
+    batch = nextTrainingBatch(train_dataset, train_labels, 200)
+    optimizer.run(feed_dict={x: batch["data"], y_: batch["labels"]})
+    if 0 == i%100:
+        print 'checkpoint accuracy %g' % session.run(
+            accuracy, feed_dict={x: valid_dataset,
+                                 y_: valid_labels})                  
+
+print 'training accuracy %g' % session.run(
+    accuracy, feed_dict={x: test_dataset,
+                         y_: test_labels})
+
+# Export model
+export_path = "./model/1" 
+print 'Exporting trained model to', export_path
+builder = saved_model_builder.SavedModelBuilder(export_path)
+
+# Build the signature_def_map.
+values, indices = tf.nn.top_k(y, 3)
+prediction_classes = tf.contrib.lookup.index_to_string(
+      tf.to_int64(indices), mapping=["RED", "PURPLE", "GREEN"])
+classification_inputs = utils.build_tensor_info(serializedModel)
+classification_outputs_classes = utils.build_tensor_info(prediction_classes)
+classification_outputs_scores = utils.build_tensor_info(values)
+
+classification_signature = signature_def_utils.build_signature_def(
+    inputs={signature_constants.CLASSIFY_INPUTS: classification_inputs},
+    outputs={
+        signature_constants.CLASSIFY_OUTPUT_CLASSES:
+            classification_outputs_classes,
+        signature_constants.CLASSIFY_OUTPUT_SCORES:
+            classification_outputs_scores
+      },
+    method_name=signature_constants.CLASSIFY_METHOD_NAME)
+
+tensor_info_x = utils.build_tensor_info(x)
+tensor_info_y = utils.build_tensor_info(y)
+
+prediction_signature = signature_def_utils.build_signature_def(
+    inputs={'images': tensor_info_x},
+    outputs={'scores': tensor_info_y},
+    method_name=signature_constants.PREDICT_METHOD_NAME)
+
+legacy_init_op = tf.group(tf.initialize_all_tables(), name='legacy_init_op')
+builder.add_meta_graph_and_variables(
+    session, [tag_constants.SERVING],
+    signature_def_map={
+        'predict_images':
+            prediction_signature,
+        signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+            classification_signature,
+    },
+    legacy_init_op=legacy_init_op)
+
+builder.save()
+
+print 'Done exporting!'
+
+"""
 graph = tf.Graph()
 with graph.as_default():
 
@@ -161,18 +250,18 @@ with graph.as_default():
     tf.matmul(tf_valid_dataset, weights) + biases)
   test_prediction = tf.nn.softmax(tf.matmul(tf_test_dataset, weights) + biases)
 
-num_steps = 200
+num_steps = 500
 
 def accuracy(predictions, labels):
   return (100.0 * np.sum(np.argmax(predictions, 1) == np.argmax(labels, 1))
           / predictions.shape[0])
 
+print "training model..."
 with tf.Session(graph=graph) as session:
   # This is a one-time operation which ensures the parameters get initialized as
   # we described in the graph: random weights for the matrix, zeros for the
   # biases. 
   tf.global_variables_initializer().run()
-  print('Initialized')
   for step in range(num_steps):
     # Run the computations. We tell .run() that we want to run the optimizer,
     # and get the loss value and the training predictions returned as numpy
@@ -188,6 +277,18 @@ with tf.Session(graph=graph) as session:
       print('Validation accuracy: %.1f%%' % accuracy(
         valid_prediction.eval(), valid_labels))
 
-  saver = tf.train.Saver()
-  saver.save(session, 'color-model')
   print('Test accuracy: %.1f%%' % accuracy(test_prediction.eval(), test_labels))
+
+# Export model
+export_path_base = sys.argv[-1]
+export_path = os.path.join(
+    compat.as_bytes(export_path_base),
+    compat.as_bytes(str(FLAGS.model_version)))
+print 'Exporting trained model to', export_path
+builder = saved_model_builder.SavedModelBuilder(export_path)
+
+# Build the signature_def_map.
+classification_inputs = utils.build_tensor_info(serialized_tf_example)
+classification_outputs_classes = utils.build_tensor_info(prediction_classes)
+classification_outputs_scores = utils.build_tensor_info(values)
+"""
