@@ -31,6 +31,20 @@ namespace setsolver {
     return stream;
   }
 
+  Symbol parseSymbol(const std::string& s)
+  {
+    if ("DIAMOND" == s) {
+      return Symbol::DIAMOND;
+    }
+    else if ("SQUIGGLE" == s) {
+      return Symbol::SQUIGGLE;
+    }
+    else if ("OVAL" == s) {
+      return Symbol::OVAL;
+    }
+    assert(!"failed to parse symbol");
+  }
+
   Symbol computeSymbol(const vector<Point>& contour)
   {
     vector<Point> approx;

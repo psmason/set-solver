@@ -48,6 +48,19 @@ namespace setsolver {
     return stream;
   }
 
+  Shading parseShading(const std::string& s) {
+    if ("SOLID" == s) {
+      return Shading::SOLID;
+    }
+    else if ("STRIPED" == s) {
+      return Shading::STRIPED;
+    }
+    else if ("OPEN" == s) {
+      return Shading::OPEN;
+    }
+    assert(!"failed to parse shading");
+  }
+
   Shading computeShading(const Mat& card,
                          const vector<Point>& contour)  {
     Contours contours;

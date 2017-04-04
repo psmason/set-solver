@@ -130,6 +130,19 @@ namespace setsolver {
                              
   }
 
+  Color parseColor(const std::string& s) {
+    if ("RED" == s) {
+      return Color::RED;
+    }
+    else if ("PURPLE" == s) {
+      return Color::PURPLE;
+    }
+    else if ("GREEN" == s) {
+      return Color::GREEN;
+    }
+    assert(!"failed to parse color");
+  }
+
   ostream& operator<< (ostream& stream, const Color& color)
   {
     stream << colorToString(color);

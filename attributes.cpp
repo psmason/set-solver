@@ -3,6 +3,7 @@
 #include <color.h>
 #include <symbol.h>
 #include <types.h>
+#include <utils.h>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -82,62 +83,11 @@ namespace setsolver {
     return stream;
   }
 
-  void orderPoints(std::array<Point2f, 4>& points) {
-    // assumes points are (column, row) coordinates.
-    // order clockwise from bottom left corner.
-
-    // sort by column
-    std::sort(points.begin(), points.end(),
-              [](const Point2f& lhs, const Point2f& rhs) {
-                return lhs.x < rhs.x;
-              });
-
-    // sort by row
-    std::sort(points.begin(), points.begin()+2,
-              [](const Point2f& lhs, const Point2f& rhs) {
-                return lhs.y > rhs.y;
-              });
-    std::sort(points.begin()+2, points.end(),
-              [](const Point2f& lhs, const Point2f& rhs) {
-                return lhs.y < rhs.y;
-              });
-
-    // if ordered point height is greater than width,
-    // a rotation will put the card into a normalized landspace shape.
-    const auto height = points[0].x - points[1].x;
-    const auto width  = points[2].y - points[1].y;
-    if (height > width) {
-      std::rotate(points.begin(), points.begin()+1, points.end());
-    }
-  }
-
-  Mat correctCard(const Mat& maskedFrame, const Contour& cardContour) {
-    // correcting for rotations
-    const auto rect = minAreaRect(cardContour);
-      
-    // normalize the card accounting for rotation
-    std::array<Point2f, 4> warpedPts;
-    rect.points(warpedPts.begin());      
-    orderPoints(warpedPts);
-
-    std::array<Point2f, 4> correctedPts;
-    correctedPts[0] = Point2f(0, 150);
-    correctedPts[1] = Point2f(0, 0);
-    correctedPts[2] = Point2f(250, 0);
-    correctedPts[3] = Point2f(250, 150);
-
-    Mat transform = getPerspectiveTransform(warpedPts.begin(),     
-                                                correctedPts.begin());
-    Mat warpedImg;
-    warpPerspective(maskedFrame, warpedImg, transform, Size(250,150));
-
-    return warpedImg;
-  }
-
   FeatureSet getCardFeatures(const Mat& frame,
                              const Cards& cards,
                              const bool debug) {
 
+    /*
     // black out all pixels not within the cards
     auto copy = frame.clone();
     copy = 0;
@@ -147,11 +97,12 @@ namespace setsolver {
     
     Mat maskedFrame;
     bitwise_and(frame, copy, maskedFrame);
+    */
     
     FeatureSet featureSet;
     for (const auto& cardContour: cards) {
 
-      const auto corrected = correctCard(maskedFrame, cardContour);
+      const auto corrected = correctCard(frame, cardContour);
       if (debug) {
         imshow("find attributes - corrected card", corrected);
       }

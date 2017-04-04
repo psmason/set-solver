@@ -16,6 +16,7 @@ namespace setsolver {
     PURPLE,
   };
   std::ostream& operator<< (std::ostream& stream, const Color& color);
+  Color parseColor(const std::string& s);
   
   Color computeColor(const cv::Mat& card,
                      const cv::Mat& mask,
