@@ -8,6 +8,7 @@ SRCS += solver.cpp
 SRCS += paintmatches.cpp
 SRCS += utils.cpp
 SRCS += client.cpp
+SRCS += debug.cpp
 
 FLAGS  = -I.
 FLAGS += `pkg-config --cflags --libs opencv`
