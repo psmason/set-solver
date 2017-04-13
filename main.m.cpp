@@ -3,6 +3,7 @@
 #include <solver.h>
 #include <paintmatches.h>
 #include <utils.h>
+#include <client.h>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -51,7 +52,15 @@ namespace {
                    CARD_HIGHLIGHT,
                    1);
 
-      if (knownFeatures) {
+      const auto predictedColor = tfColor(correctCard(frame, cards.front()));
+      std::cout << "DEBUG: predicted color = " << predictedColor << std::endl;
+      if (knownFeatures &&
+          knownFeatures->color != predictedColor) {
+        std::cout << "DEBUG: bad prediction.  Writing new file!"
+                  << std::endl;
+        std::cout << "DEBUG: known=" << *knownFeatures
+                  << std::endl;
+
         const auto corrected = correctCard(frame, cards.front());
         std::ostringstream path;
         path << "./tf/training/"
@@ -63,13 +72,25 @@ namespace {
              << ".JPG";
         assert(imwrite(path.str(), corrected));
       }
+      //const auto features = getCardFeatures(frame, cards, true);
+      // if (!features.empty()) {
+      // std::cout << "DEBUG: "
+      //           << features.front()
+      //           << std::endl;
+      // }
 
-      const auto features = getCardFeatures(frame, cards, true);
-      if (!features.empty()) {
-        std::cout << "DEBUG: "
-                  << features.front()
-                  << std::endl;
-      }
+      // if (knownFeatures) {
+      //   const auto corrected = correctCard(frame, cards.front());
+      //   std::ostringstream path;
+      //   path << "./tf/training/"
+      //        << knownFeatures->color
+      //        << "-" << knownFeatures->symbol
+      //        << "-" << knownFeatures->shading
+      //        << "-" << knownFeatures->number
+      //        << "-" << std::hex << rng()
+      //        << ".JPG";
+      //   assert(imwrite(path.str(), corrected));
+      // }
     }
   }                      
 }

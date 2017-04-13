@@ -90,6 +90,7 @@ organized = organizeByColor(files)
 features, labels = loadAndNormalize(organized)
 split = splitData(features, labels)
 
+# Train model
 def nextTrainingBatch(data, batchSize):
     indices = random.sample(range(data["features"].shape[0]), batchSize)
     return {
@@ -103,7 +104,6 @@ def formatFeatures(features):
 def formatLabels(labels):
     return np.arange(NUM_COLORS) == labels[:,None].astype(np.float32)
 
-# Train model
 session = tf.InteractiveSession()
 serializedModel = tf.placeholder(tf.string, name="set_color_model")
 featureConfigs = {"x" : tf.FixedLenFeature(shape=[np.prod(REDUCED_IMAGE_SHAPE)],
@@ -114,24 +114,31 @@ y_ = tf.placeholder('float', shape=[None, 3])
 w  = tf.Variable(tf.truncated_normal([np.prod(REDUCED_IMAGE_SHAPE), 3]))
 b  = tf.Variable(tf.zeros([3]))
 
-session.run(tf.global_variables_initializer())
 y = tf.identity(tf.matmul(x, w) + b, name='y')
 loss = tf.reduce_mean(
     tf.nn.softmax_cross_entropy_with_logits(logits=y, labels=y_)
-)
+    + 0.01*0.5*(tf.nn.l2_loss(w))
+) 
 
 optimizer = tf.train.GradientDescentOptimizer(0.5).minimize(loss)
 
+session.run(tf.global_variables_initializer())
+
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
-for i in range(500):
-    batch = nextTrainingBatch(split["training"], 200)
+for i in range(5000):
+    batch = nextTrainingBatch(split["training"], 400)
     optimizer.run(feed_dict={
         x  : formatFeatures(batch["features"]),
         y_ : formatLabels(batch["labels"]),
     })
     if 0 == i%100:
-        print 'checkpoint accuracy %g' % session.run(
+        print 'checkpoint training accuracy %g' % session.run(
+            accuracy, feed_dict={
+                x  : formatFeatures(split["training"]["features"]),
+                y_ : formatLabels(split["training"]["labels"]),
+            })                  
+        print 'checkpoint validation accuracy %g' % session.run(
             accuracy, feed_dict={
                 x  : formatFeatures(split["validation"]["features"]),
                 y_ : formatLabels(split["validation"]["labels"]),
@@ -143,20 +150,23 @@ print 'training accuracy %g' % session.run(
         y_ : formatLabels(split["test"]["labels"]),
     })
 
-
 # Start the classification server
 import cv2
 class MyTCPHandler(SocketServer.BaseRequestHandler):
     def handle(self):
-        # receive 1MB        
-        data = self.request.recv(1024*1024)
-        raw = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR)
-        normalized = normalizeImage(scipy.misc.imresize(raw, REDUCED_IMAGE_SHAPE))
-        normalized = normalized.reshape((-1, np.prod(REDUCED_IMAGE_SHAPE))).astype(np.float32)
-        prediction =  session.run(
-            tf.argmax(y, 1), feed_dict={x: normalized}
-        )
-        self.request.sendall(["RED", "PURPLE","GREEN"][prediction])
+        while True:
+            data = self.request.recv(1024*1024)
+            if not data:
+                break
+            array = np.frombuffer(data, dtype=np.uint8)
+            raw = cv2.imdecode(array, cv2.IMREAD_COLOR)
+            normalized = normalizeImage(scipy.misc.imresize(raw, REDUCED_IMAGE_SHAPE))
+            normalized = normalized.reshape((-1, np.prod(REDUCED_IMAGE_SHAPE))).astype(np.float32)
+            prediction =  session.run(
+                tf.argmax(y, 1), feed_dict={x: normalized}
+            )
+            response = ["RED", "PURPLE","GREEN"][prediction]
+            self.request.sendall(response)
 
 server = SocketServer.TCPServer(("localhost", 9000), MyTCPHandler)
 print "starting model service"
