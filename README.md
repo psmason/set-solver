@@ -18,3 +18,13 @@ Passing in the "-d" flag will trigger debug mode, where the features of the cent
 
 # Hardware
 Currently testing using the C270 camera: http://a.co/e2CESYL.  Hopefully I'm not overfitting the problem to this camera. 
+
+# Tensorflow
+The next steps for this project are to use tensorflow to train models classifying webcam frames into the appropriate attributes for matching.  Currently, training is focused on the color attribute, which is the attribute I've been struggling with the most.
+
+The current training workflow is to (iteratively):
+1. Start the task in debug mode, with known card features as inputs.  (See help instructions for correct arguments.)
+2. Write to disk images which are incorrectly classified. 
+3. Retrain the model using [train-color.py](tf/train-color.py), which splits files written in (1) into train/validation/test datasets. 
+4. Start the TCP server which allows access to the model trained in (3).  Right now, [train-color.py](tf/train-color.py) starts the server automatically. 
+5. Repeat as necessary.
