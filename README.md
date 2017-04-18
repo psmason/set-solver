@@ -24,7 +24,7 @@ The next steps for this project are to use tensorflow to train models classifyin
 
 The current training workflow is to (iteratively):
 1. Start the task in debug mode, with known card features as inputs.  (See help instructions for correct arguments.)
-2. Write to disk images which are incorrectly classified. 
+2. Write to disk images which are incorrectly classified. (These writes are currently automatic, one file per webcam feed having the bad classification.)
 3. Retrain the model using [train-color.py](tf/train-color.py), which splits files written in (1) into train/validation/test datasets. 
 4. Start the TCP server which allows access to the model trained in (3).  Right now, [train-color.py](tf/train-color.py) starts the server automatically. 
 5. Repeat as necessary.
